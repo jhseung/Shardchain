@@ -1,4 +1,4 @@
-import time
+import time, hashlib
 import copy
 
 class ShardBlock:
@@ -18,7 +18,6 @@ class ShardBlock:
 	"""
     def __init__(self,
                  shard_id,
-				 block_no, 
 				 parent_block_no, 
 				 parent_hash,
 				 parent_block = None,
@@ -28,15 +27,15 @@ class ShardBlock:
 				 difficulty = 0,
 				 nonce = 0):
         self.shard_id = shard_id
-        self.block_no = block_no
-		self.parent_hash = parent_hash
-		self.parent_block = parent_block
-		self.transactions = transactions
-		self.starting_state = starting_state
-		self.resulting_state = copy.deepcopy(starting_state) #copying dic to maintain starting_state for now
-		self.timestamp = timestamp
-		self.difficulty = difficulty
-		self.nonce = nonce
+        self.block_no = 0
+        self.parent_hash = parent_hash
+        self.parent_block = parent_block
+        self.transactions = transactions
+        self.starting_state = starting_state
+        self.resulting_state = copy.deepcopy(starting_state) #copying dic to maintain starting_state for now
+        self.timestamp = timestamp
+        self.difficulty = difficulty
+        self.nonce = nonce
 
     """
     Verifies if a transaction is valid
@@ -49,11 +48,11 @@ class ShardBlock:
     :return: <bool>
     """
     def _is_transaction_valid(self, transaction):
-        if transaction.sender not in starting_state:
+        if transaction.sender not in self.starting_state:
             return False
-        if starting_state[transaction.sender] < transaction.amount:
+        if self.starting_state[transaction.sender] < transaction.amount:
             return False
-        if not isinstance(transaction.amount, float) or transaction.amount < 0:
+        if transaction.amount < 0:
             return False
         return True
 
@@ -66,11 +65,11 @@ class ShardBlock:
     """
     def add_transaction(self, transaction):
         self.transactions.append(transaction)
-        if not _is_transaction_valid(transaction):
+        if not self._is_transaction_valid(transaction):
             print "INVALID TRANSACTION"
             return
         self.starting_state[transaction.sender] -= transaction.amount
-        if transaction.recipient not in starting_state:
+        if transaction.recipient not in self.starting_state:
             self.starting_state[transaction.recipient] = transaction.amount
         else:
             self.starting_state[transaction.recipient] = self.starting_state[transaction.recipient] +\
@@ -82,11 +81,11 @@ class ShardBlock:
     """
     def hash_block(self):
         txs = list(map(lambda x : x.sender + x.recipient + str(x.amount), self.transactions))
-		header = self.parent_hash + self.txs + self.timestamp
+        header = self.parent_hash + txs + self.timestamp
         return hashlib.sha256(header).hexdigest()
-    
+
     def __eq__(self, other):
-        return isinstance(other, ShardBlock) and hash_block() == other.hash_block()
+        return isinstance(other, ShardBlock) and self.hash_block() == other.hash_block()
 
     def __hash__(self):
-        return hash_block()
+        return self.hash_block()

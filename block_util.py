@@ -1,6 +1,5 @@
 import hashlib
-
-NUMBER_OF_SHARDS = 2
+from config import NUMBER_OF_SHARDS
 
 """ Verifies the current block
 

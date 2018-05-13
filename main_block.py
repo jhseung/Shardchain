@@ -1,10 +1,8 @@
 import time
 import json, random, hashlib
 import block_util
-
 import shard_block
-
-NUMBER_OF_SHARDS = 2
+from config import NUMBER_OF_SHARDS
 
 class MainBlock:
 	"""
@@ -26,8 +24,7 @@ class MainBlock:
 				 parent_hash,
 				 parent_block = None,
 				 shards = {}, #contains key-value mapping of shards
-				 shard_length = {} #respective shard length for shard
-				 q_sub_k = {},
+				 shard_length = {}, #respective shard length for shard
 				 timestamp = time.time(),
 				 difficulty = 0,
 				 nonce = 0):
@@ -36,7 +33,7 @@ class MainBlock:
 		self.parent_hash = parent_hash
 		self.parent_block = parent_block
 		self.shards = shards
-		self.q_sub_k = q_sub_k
+		self.shard_length = shard_length
 		self.timestamp = timestamp
 		self.difficulty = difficulty
 		self.nonce = nonce
@@ -54,7 +51,7 @@ class MainBlock:
 	def _is_valid_shard(self, shard):
 		latest_shard_block = self.shards[shard.shard_id]
 		prev_mined_block = self.parent_block.shards[shard.shard_id]
-		min_length = self.q_sub_k[shard.shard_id]
+		min_length = self.shard_length[shard.shard_id]
 		for _ in range(min_length):
 			latest_shard_block = latest_shard_block.parent_block
 		if latest_shard_block == prev_mined_block:
@@ -74,7 +71,7 @@ class MainBlock:
 		return hashlib.sha256(block_string).hexdigest()
 
 	def proof_of_work(self):
-		added_nonce = self.hash_block() + self.timestamp + self.nonce + random.randint(0,1e20)
+		added_nonce = self.hash_block() + self.timestamp + self.nonce
 		return hashlib.sha256(added_nonce).hexdigest()
 
 	def mine_block(self):
@@ -82,7 +79,7 @@ class MainBlock:
 			if len(self.shards) != NUMBER_OF_SHARDS:
 				time.sleep(0.1)
 			else:
-				self.nonce += 1
+				self.nonce = self.nonce + random.uniform(0,1)
 				hashed = self.proof_of_work()
 				if hashed[:self.difficulty] == "0" * self.difficulty:
 					return
@@ -93,7 +90,7 @@ class MainBlock:
 		else:
 			while n > 0:
 				array.append(parent)
-				return retrieve_parents(parent.parent_block , n-1, array)
+				return self.retrieve_parents(parent.parent_block , n-1, array)
 
 	def adjust_shard_length(self):
 		N = 10 #some random constant
@@ -101,7 +98,7 @@ class MainBlock:
 		shard_transaction_map = {}
 		for shard_id in self.shards:
 			transactions_per_shard = 0
-			parents = retrieve_parents(self.parent_block, N, [])
+			parents = self.retrieve_parents(self.parent_block, N, [])
 			for parent_block in parents:
 				for shardBlock in parent_block.shards[shard_id]:
 					transactions_per_shard = transactions_per_shard + len(shardBlock.transactions)
@@ -110,5 +107,5 @@ class MainBlock:
 		for shard_id in shard_transaction_map:
 			shard_transaction_map[shard_id] = shard_transaction_map[shard_id] / Eth_Transactions_Per_Block
 
-		for shard_id in shards:
+		for shard_id in self.shards:
 			self.shard_length[shard_id] = shard_transaction_map[shard_id]
