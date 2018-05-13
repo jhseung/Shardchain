@@ -2,6 +2,8 @@ import time
 import json, random, hashlib
 import block_util
 
+import shard_block
+
 NUMBER_OF_SHARDS = 2
 
 class MainBlock:
@@ -13,17 +15,18 @@ class MainBlock:
 		key - shard ID using to_shard function
 		value - pointer to latest block in particular shard
 	:q_sub_k: <dict> key-value mapping of shard to length cap
-		key - shard ID using to_shard function 
+		key - shard ID using to_shard function
 		value - int representing min length cap of shard
 	:timestamp: <float> timestamp of when block was instantiated
 	:difficulty: ???
 	:nonce: ???
 	"""
-	def __init__(self, 
-				 block_no, 
+	def __init__(self,
+				 block_no,
 				 parent_hash,
 				 parent_block = None,
 				 shards = {}, #contains key-value mapping of shards
+				 shard_length = {} #respective shard length for shard
 				 q_sub_k = {},
 				 timestamp = time.time(),
 				 difficulty = 0,
@@ -47,7 +50,7 @@ class MainBlock:
 					if addr == sender:
 						return shard
 		return None
-	
+
 	def _is_valid_shard(self, shard):
 		latest_shard_block = self.shards[shard.shard_id]
 		prev_mined_block = self.parent_block.shards[shard.shard_id]
@@ -83,4 +86,29 @@ class MainBlock:
 				hashed = self.proof_of_work()
 				if hashed[:self.difficulty] == "0" * self.difficulty:
 					return
-		
+
+	def retrieve_parents(self, parent, n, array):
+		if n == 0 or parent.parent_block == None:
+			return array
+		else:
+			while n > 0:
+				array.append(parent)
+				return retrieve_parents(parent.parent_block , n-1, array)
+
+	def adjust_shard_length(self):
+		N = 10 #some random constant
+		Eth_Transactions_Per_Block = 138
+		shard_transaction_map = {}
+		for shard_id in self.shards:
+			transactions_per_shard = 0
+			parents = retrieve_parents(self.parent_block, N, [])
+			for parent_block in parents:
+				for shardBlock in parent_block.shards[shard_id]:
+					transactions_per_shard = transactions_per_shard + len(shardBlock.transactions)
+			shard_transaction_map[shard_id] = transactions_per_shard / N
+
+		for shard_id in shard_transaction_map:
+			shard_transaction_map[shard_id] = shard_transaction_map[shard_id] / Eth_Transactions_Per_Block
+
+		for shard_id in shards:
+			self.shard_length[shard_id] = shard_transaction_map[shard_id]
