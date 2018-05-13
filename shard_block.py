@@ -51,7 +51,8 @@ class ShardBlock:
     :return: <bool>
     """
     def _is_transaction_valid(self, transaction):
-        if transaction.sender not in self.starting_state:
+        if block_util.to_shard(transaction.sender) == self.shard_id and\
+           transaction.sender not in self.starting_state:
             return False
         if self.starting_state[transaction.sender] < transaction.amount:
             return False
@@ -74,12 +75,22 @@ class ShardBlock:
             raise exception("Invalid transaction")
         if len(self.transaction) == ETH_TX_BLOCK:
             raise exception("Block full")
-        self.starting_state[transaction.sender] -= transaction.amount
-        if transaction.recipient not in self.starting_state and not transaction.is_intershard:
-            self.resulting_state[transaction.recipient] = transaction.amount
-        elif transaction.recipient in self.starting_state and not transaction.is_intershard:
-            self.resulting_state[transaction.recipient] = self.resulting_state[transaction.recipient] +\
-            transaction.amount
+        if transaction.is_intershard:
+            self.starting_state[transaction.sender] -= transaction.amount
+            if transaction.recipient not in self.starting_state:
+                self.resulting_state[transaction.recipient] = transaction.amount
+            else:
+                self.resulting_state[transaction.recipient] = self.resulting_state[transaction.recipient] +\
+                transaction.amount
+        else:
+            if block_util.to_shard(transaction.sender) == self.shard_id:
+                self.starting_state[transaction.sender] -= transaction.amount
+            else:
+                if transaction.recipient not in self.starting_state:
+                    self.resulting_state[transaction.recipient] = transaction.amount
+                else:
+                    self.resulting_state[transaction.recipient] = self.resulting_state[transaction.recipient] +\
+                    transaction.amount
 
     """
 	Hashes the <dict> containing all head blocks of the shardchains

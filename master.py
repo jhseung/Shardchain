@@ -13,6 +13,8 @@ class Master():
         self.mining_reward = MINING_REWARD
         self.nodes = []
         self.blockchain = self._instantiate_blockchain()
+        self.blocks = {}
+        self.forks = {}
 
     def _instantiate_blockchain(self):
         GENESIS_BLOCK = main_block.MainBlock(None)
@@ -39,6 +41,10 @@ class Master():
                 while randint == i:
                     randint = random.randint(0, NUMBER_OF_NODES)
                 node.neighbors.append(self.nodes[randint])
+
+    def update_block(self, block):
+        if block.nonce !=0:
+            self.blocks[block.header] = block
 
     def run(self):
         raise NotImplementedError()
