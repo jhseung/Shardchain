@@ -28,7 +28,7 @@ class Node:
 		self.pending_transactions = []
 
 	def handle_transaction(self, transaction, pending_tran=False):
-		if transaction.isInter == False:
+		if transaction.is_intershard == False:
 			mine(self)
 		else:
 			if pending_tran == False:

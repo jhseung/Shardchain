@@ -27,6 +27,7 @@ class ShardBlock:
 				 difficulty = 0,
 				 nonce = 0):
         self.shard_id = shard_id
+        self.parent_block_no = parent_block_no
         self.block_no = 0
         self.parent_hash = parent_hash
         self.parent_block = parent_block
