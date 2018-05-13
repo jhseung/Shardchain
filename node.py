@@ -7,7 +7,7 @@ All nodes are full nodes; i.e. all nodes retain the full BC and the resulting st
 """
 class Node:
 	def __init__(self, 
-		         master_addr
+		         master_addr,
 		         neighbors = [],
 		         private_key = None,
 		         public_key = None,

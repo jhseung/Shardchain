@@ -1,4 +1,6 @@
-import block
+import hashlib
+
+NUMBER_OF_SHARDS = 2
 
 """ Verifies the current block
 
@@ -18,3 +20,12 @@ def get_hash(block):
 """ Convert block to json """
 def to_json(block):
 	raise NotImplementedError()
+
+""" 
+Returns appropriate shard for transaction 
+
+:param transaction: <Transaction> transaction to be assigned a shard
+:return: <str> shard number
+"""
+def to_shard(transaction):
+	return hashlib.sha256(transaction.sender).hexdigest() % NUMBER_OF_SHARDS
