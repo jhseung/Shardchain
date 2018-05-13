@@ -59,30 +59,37 @@ class MainBlock:
 		else:
 			return False
 
+	"""
+	Adds shard to block if it is a valid shard
+	:shard: <ShardBlock>
+	"""
 	def add_shard(self, shard):
-		if not self._is_valid_shard(shard):
-			return
-		else:
+		if self._is_valid_shard(shard):
 			self.shards[shard.shard_id] = shard
-			return
 
-	def hash_block(self):
+	"""
+	Hashes the <dict> containing all head blocks of the shardchains
+	:return: <str> hash of shards
+	"""
+	def hash_contents(self):
 		block_string = json.dumps(self.shards, sort_keys=True).encode()
 		return hashlib.sha256(block_string).hexdigest()
 
-	def proof_of_work(self):
-		added_nonce = self.hash_block() + self.timestamp + self.nonce
-		return hashlib.sha256(added_nonce).hexdigest()
+	"""
+	Confirms if the header and validity of the block if
+	1) hashing the block contents and nonce returns a value lower than difficulty
+	2) number of shard headers match NUMBER_OF_SHARDS
 
-	def mine_block(self):
-		while True:
-			if len(self.shards) != NUMBER_OF_SHARDS:
-				time.sleep(0.1)
-			else:
-				self.nonce = self.nonce + random.uniform(0,1)
-				hashed = self.proof_of_work()
-				if hashed[:self.difficulty] == "0" * self.difficulty:
-					return
+	If valid, sets class variable header to be of header and nonce to be of valid nonce
+	:nonce: <int> or <str> that satisfies block
+	"""
+	def confirm_header(self, nonce):
+		to_hash = self.hash_contents() + nonce
+		hashed = hashlib.sha256(to_hash).hexdigest()
+		if hashed[:self.difficulty] == "0" * self.difficulty and \
+		   len(self.shards) == NUMBER_OF_SHARDS :
+			self.header = hashed
+			self.nonce = nonce
 
 	def retrieve_parents(self, parent, n, array):
 		if n == 0 or parent.parent_block == None:

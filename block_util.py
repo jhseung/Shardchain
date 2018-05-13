@@ -27,5 +27,5 @@ Returns appropriate shard for transaction
 :param transaction: <Transaction> transaction to be assigned a shard
 :return: <str> shard number
 """
-def to_shard(transaction):
-	return hashlib.sha256(transaction.sender).hexdigest() % NUMBER_OF_SHARDS
+def to_shard(account_id):
+	return hashlib.sha256(account_id).hexdigest() % NUMBER_OF_SHARDS

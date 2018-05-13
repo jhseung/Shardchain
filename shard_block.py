@@ -76,16 +76,31 @@ class ShardBlock:
             transaction.amount
     
     """
-    Creates a SHA256 hash of the block
-    :return: <str> 
-    """
-    def hash_block(self):
+	Hashes the <dict> containing all head blocks of the shardchains
+	:return: <str> hash of shards
+	"""
+    def hash_contents(self):
         txs = list(map(lambda x : x.sender + x.recipient + str(x.amount), self.transactions))
         header = self.parent_hash + txs + self.timestamp
         return hashlib.sha256(header).hexdigest()
 
+    """
+    Confirms if the header and validity of the block if
+	1) hashing the block contents and nonce returns a value lower than difficulty
+	2) number of shard headers match NUMBER_OF_SHARDS
+
+	If valid, sets class variable header to be of header and nonce to be of valid nonce
+	:nonce: <int> or <str> that satisfies block
+	"""
+    def confirm_header(self, nonce):
+		to_hash = self.hash_contents() + nonce
+		hashed = hashlib.sha256(to_hash).hexdigest()
+		if hashed[:self.difficulty] == "0" * self.difficulty:
+			self.header = hashed
+			self.nonce = nonce
+
     def __eq__(self, other):
-        return isinstance(other, ShardBlock) and self.hash_block() == other.hash_block()
+        return isinstance(other, ShardBlock) and self.hash_contents() == other.hash_contents()
 
     def __hash__(self):
-        return self.hash_block()
+        return self.hash_contents()
