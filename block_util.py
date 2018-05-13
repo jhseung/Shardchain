@@ -18,7 +18,7 @@ def get_hash(block):
 	raise NotImplementedError()
 
 """ Convert block to json """
-def to_json(block):
+def block_to_json(block):
 	raise NotImplementedError()
 
 """
