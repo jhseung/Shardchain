@@ -76,11 +76,8 @@ class Node:
 				# Already seen this data before; ignore
 				if hash_json(data) in self.seen_hashes:
 					continue
-<<<<<<< HEAD
 				else:
-=======
 				#Propagate
->>>>>>> e246bdbc25ebc0214f3773f637b2f5716b5e3f8c
 
 				# Relay to all my neighbors
 				self.communicator.broadcast_json(self.neighbors, data_in_dict, exclude = [addr])
