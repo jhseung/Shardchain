@@ -29,7 +29,7 @@ class ShardBlock:
 				 nonce = 0):
         self.shard_id = shard_id
         self.parent_block_no = parent_block_no
-        self.block_no = 0
+        self.block_no = -1
         self.parent_hash = parent_hash
         self.parent_block = parent_block
         self.transactions = transactions
@@ -98,11 +98,14 @@ class ShardBlock:
 	:nonce: <int> or <str> that satisfies block
 	"""
     def confirm_header(self, nonce):
-		to_hash = self.hash_contents() + nonce
-		hashed = hashlib.sha256(to_hash).hexdigest()
-		if hashed[:self.difficulty] == "0" * self.difficulty:
+        if self.block_no != -1:
+            return
+    	to_hash = self.hash_contents() + nonce
+        hashed = hashlib.sha256(to_hash).hexdigest()
+        if hashed[:self.difficulty] == "0" * self.difficulty:
 			self.header = hashed
 			self.nonce = nonce
+            self.block_no = self.parent_block_no + 1
 
     def __eq__(self, other):
         return isinstance(other, ShardBlock) and self.hash_contents() == other.hash_contents()

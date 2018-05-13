@@ -1,4 +1,5 @@
-import block, block_util, comms, consensus, communicator, transaction
+import block, block_util, comms, consensus, communicator 
+import transaction ,transaction_util
 import hashlib
 from collections import defaultdict
 import json
@@ -19,11 +20,13 @@ class Node:
 		         master_addr,
 		         neighbors = [],
 		         activity_level = 0.5,
+				 mainblock = None,
 		         port_no):
 		self.master_addr = master_addr
 		self.neighbors = neighbors
 		self.current_chain = None
 		self.current_mining_block = None
+		self.mainblock = mainblock
 		self.activity_level = activity_level
 
 		self.seen_hashes = defaultdict(int)       # Hash values encountered from the flooding network
@@ -79,35 +82,48 @@ class Node:
 				self.communicator.broadcast_json(self.neighbors, data_in_dict, exclude = [addr])
 
 				# Process depending on data type
-				data_type = in_json["type"]
+				data_type = data_in_dict["type"]
 				process_incoming_data(data_type, data_in_dict)
 					
 			
 
 			raise NotImplementedError()
 
+	def did_fill_q_k(self, shardblock, mainblock):
+		prev_block_no = mainblock.parent_block.shards[shardblock.shard_id].block_no
+		return shardblock.block_no - prev_block_no == mainblock.shard_length[shardblock.shard_id]
+
+	def open_shards(self, mainblock):
+		for shard_id in mainblock.shards:
+			if not self.did_fill_q_k(mainblock.shards[shard_id], mainblock):
+				return shard_id
+		return -1
+
 	def process_incoming_data(self, data_type, data_in_dict):
 
 		if data_type == "tx":
-			""" TODO
-			If tx is in my current_shard,
-				1) verify it (i.e. state transition is valid)
-				2) store it somewhere
-			"""
-			pass
+			tx = transaction_util.json_to_tx(data_in_dict)
+			if block_util.to_shard(tx.sender) == self.current_chain:
+				self.current_mining_block.add_transaction(tx)
 
 		elif data_type == "shard_block":
-			""" TODO
-
-
-			"""
-			pass
+			block = block_util.json_to_block(data_in_dict)
+			if self.current_chain == block.shard_id and consensus.validate_pow(block) and self.current_mining_block.block_no < block.block_no:
+				if not self.did_fill_q_k(block, self.mainblock):
+					self.current_mining_block = block
+			    else:
+					new_shard_id = open_shards(self.mainblock)
+					if not new_shard_id == -1:
+						self.current_chain = new_shard_id
+					else:
+						self.current_mining_block = self.mainblock
 
 		elif data_type == "main_block":
-			pass
-
-		else:
-			pass	
+			block = block_util.json_to_block(data_in_dict)
+			if consensus.validate_pow(block) and self.mainblock.block_no < block.block_no:
+				self.mainblock = block
+			#handle stuff?
+		
 
 def hash_json(data_in_bytes):
 	return hashlib.sha256(data_in_bytes.encode('utf-8')).hexdigest()

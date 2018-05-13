@@ -1,7 +1,6 @@
 import node
 import main_block, shard_block
 import transaction
-import comms
 from config import NUMBER_OF_NODES, NUMBER_OF_SHARDS, NUMBER_OF_TRANSACTIONS, TIME_MAINBLOCK, MINING_REWARD
 
 class Master():

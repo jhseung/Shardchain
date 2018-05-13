@@ -20,7 +20,6 @@ class MainBlock:
 	:nonce: ???
 	"""
 	def __init__(self,
-				 block_no,
 				 parent_hash,
 				 parent_block = None,
 				 shards = {}, #contains key-value mapping of shards
@@ -29,7 +28,7 @@ class MainBlock:
 				 difficulty = 0,
 				 nonce = 0):
 
-		self.block_no = block_no
+		self.block_no = -1
 		self.parent_hash = parent_hash
 		self.parent_block = parent_block
 		self.shards = shards
@@ -85,12 +84,15 @@ class MainBlock:
 	:nonce: <int> or <str> that satisfies block
 	"""
 	def confirm_header(self, nonce):
+		if self.block_no != -1:
+			return
 		to_hash = self.hash_contents() + nonce
 		hashed = hashlib.sha256(to_hash).hexdigest()
 		if hashed[:self.difficulty] == "0" * self.difficulty and \
 		   len(self.shards) == NUMBER_OF_SHARDS :
 			self.header = hashed
 			self.nonce = nonce
+			self.block_no = self.parent_block.block_no + 1
 
 	def retrieve_parents(self, n):
 		pointer = self.parent_block
