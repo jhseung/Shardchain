@@ -90,10 +90,13 @@ class Node:
 
 			raise NotImplementedError()
 
+	"""Determine if shard has filled up to q_k since the last mainblock was mined"""
 	def did_fill_q_k(self, shardblock, mainblock):
 		prev_block_no = mainblock.parent_block.shards[shardblock.shard_id].block_no
 		return shardblock.block_no - prev_block_no == mainblock.shard_length[shardblock.shard_id]
 
+
+	"""Return shard id of any shard that is not filled up yet"""
 	def open_shards(self, mainblock):
 		for shard_id in mainblock.shards:
 			if not self.did_fill_q_k(mainblock.shards[shard_id], mainblock):
@@ -101,27 +104,42 @@ class Node:
 		return -1
 
 	def process_incoming_data(self, data_type, data_in_dict):
-
+		#If the data type is a transaction
 		if data_type == "tx":
+			#Convert data to a transaction object
 			tx = transaction_util.json_to_tx(data_in_dict)
+
+			#If the sender is in the shard that the node is currently mining on, then add the transaction into the block
 			if block_util.to_shard(tx.sender) == self.current_chain:
 				self.current_mining_block.add_transaction(tx)
 
+		#If the data type is a shard block
 		elif data_type == "shard_block":
+			#Convert data to shardblock object
 			block = block_util.json_to_block(data_in_dict)
+
+			# If the block's shard is same as the shard we are mining on
+			# And if POW was good
+			# And if the block we received is a later block than our current block
 			if self.current_chain == block.shard_id and consensus.validate_pow(block) and self.current_mining_block.block_no < block.block_no:
+				# If our shard did not fill up then just mine on this block on this shard
 				if not self.did_fill_q_k(block, self.mainblock):
 					self.current_mining_block = block
+				# If the shard is full
 				else:
+					# Get a new shard id (-1 is if ALL shards are full)
 					new_shard_id = open_shards(self.mainblock)
 					if not new_shard_id == -1:
 						self.current_chain = new_shard_id
+					# If all shards are full then just mine the main block
 					else:
 						self.current_mining_block = self.mainblock
-
+		#If data type is a main block
 		elif data_type == "main_block":
 			block = block_util.json_to_block(data_in_dict)
+			#If block's POW was good and block we received is a later block than our current block
 			if consensus.validate_pow(block) and self.mainblock.block_no < block.block_no:
+				#Update mainblock
 				self.mainblock = block
 			#handle stuff?
 
