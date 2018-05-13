@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-import block, block_util, comms, consensus, communicator
-=======
-import block, block_util, comms, consensus, transaction
->>>>>>> a852a3989433b30f1e78ad50061e22905a36639d
+import block, block_util, comms, consensus, communicator, transaction
 import hashlib
 from collections import defaultdict
 import json
