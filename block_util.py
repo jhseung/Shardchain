@@ -33,7 +33,7 @@ def block_to_json(block):
 						timestamp = block.timestamp,
 						difficulty = block.difficulty,
 						nonce = block.nonce,
-						block_type = block.block_type})
+						type = block.type})
 
 	if self.block_type == 'main':
 		return json.dumps({block_no: block.block_no
@@ -44,7 +44,7 @@ def block_to_json(block):
 						timestamp = block.timestamp,
 						difficulty = block.difficulty,
 						nonce = block.nonce,
-						block_type = block.block_type})
+						type = block.type})
 
 """
 Returns appropriate shard for transaction
