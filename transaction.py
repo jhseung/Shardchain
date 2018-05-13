@@ -1,4 +1,5 @@
 import block_util
+import hashlib
 
 class Transaction:
     """
@@ -13,11 +14,14 @@ class Transaction:
         self.sender = sender
         self.recipient = recipient
         self.amount = amount
-        self.is_intershard = self._is_intershard()
+        self.is_intershard = self.is_intershard()
         self.jsontype = "transaction"
-           
-    def _is_intershard(self):
+
+    def is_intershard(self):
         if block_util.to_shard(self.sender) == block_util.to_shard(self.recipient):
             return True
         else:
             return False
+
+    def __hash__(self):
+        return hashlib.sha256(self.sender + self.recipient + self.amount).hexdigest()

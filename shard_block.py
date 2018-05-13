@@ -18,7 +18,7 @@ class ShardBlock:
 	"""
     def __init__(self,
                  shard_id,
-				 parent_block_no, 
+				 parent_block_no,
 				 parent_hash,
 				 parent_block = None,
 				 transactions = [],
@@ -27,6 +27,7 @@ class ShardBlock:
 				 difficulty = 0,
 				 nonce = 0):
         self.shard_id = shard_id
+        self.parent_block_no = parent_block_no
         self.block_no = 0
         self.parent_hash = parent_hash
         self.parent_block = parent_block
@@ -60,7 +61,7 @@ class ShardBlock:
     """
     Adds transaction to block's list of transactions
     If transaction is invalid, does not add. (perhaps raise exception later?)
-    
+
     :param transaction: <Transaction> transaction being added
     :return: None
     """
@@ -70,12 +71,15 @@ class ShardBlock:
             print "INVALID TRANSACTION"
             return
         self.starting_state[transaction.sender] -= transaction.amount
-        if transaction.recipient not in self.starting_state:
-            self.starting_state[transaction.recipient] = transaction.amount
+        if transaction.recipient not in self.starting_state and transaction.isInter == False:
+            self.resulting_state[transaction.recipient] = transaction.amount
+        elif transaction.recipient in self.starting_state and transaction.isInter == False:
+            
         else:
-            self.starting_state[transaction.recipient] = self.starting_state[transaction.recipient] +\
+
+            self.resulting_state[transaction.recipient] = self.resulting_state[transaction.recipient] +\
             transaction.amount
-    
+
     """
 	Hashes the <dict> containing all head blocks of the shardchains
 	:return: <str> hash of shards

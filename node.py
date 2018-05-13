@@ -1,4 +1,4 @@
-import block, block_util, comms, consensus
+import block, block_util, comms, consensus, transaction
 import hashlib
 
 """ Represents a node in the network
@@ -13,7 +13,7 @@ class Node:
 	:current_mining_block: <ShardBlock> longest canonical chain
 	:activity_level:
 	"""
-	def __init__(self, 
+	def __init__(self,
 		         master_addr,
 		         neighbors = [],
 		         activity_level = 0.5,
@@ -25,23 +25,27 @@ class Node:
 		self.activity_level = activity_level
 		self.socket = socket.socket()
 		self.socket.connect((socket.gethostname(), port_no))
+		self.pending_transactions = []
+
+	def handle_transaction(self, transaction, pending_tran=False):
+		if transaction.is_intershard == False:
+			mine(self)
+		else:
+			if pending_tran == False:
+				shard_id_sender = block_util.to_shard(transaction.sender)
+				shard_id_receiver = block_util.to_shard(transaction.receiver)
+				if self.current_chain == shard_id_sender: #mine this block
+					mine(self)
+				elif self.current_chain != shard_id_sender and shard_id_sender != shard_id_receiver:
+					self.pending_transactions.append(transaction)
+			else:
+				mine(self)
+
+	def post_pending_transactions(self):
+		for transaction in self.pending_transactions:
+			handle_transaction(transaction, True)
+		self.pending_transactions = []
 
 	def mine(self):
 		self.miner = consensus.Miner(self.current_mining_block)
 		nonce = self.miner.mine_block()
-
-	def run(self):
-		while True:
-			raise NotImplementedError()
-
-	def broadcast_tx(self, transaction):
-		for n in self.neighbors:
-			#TODO: broadcast transaction to neighbors
-			pass
-
-	def receive_tx(self, transaction):
-		#self.broadcast_tx(transaction)
-		if block_util.to_shard(transaction) == self.current_chain:
-			self.current_mining_block.add_transaction(transaction)
-			self.current_mining_block.mine_block() #Make multi-threaded
-		
