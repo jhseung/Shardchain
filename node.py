@@ -82,7 +82,7 @@ class Node:
 				self.communicator.broadcast_json(self.neighbors, data_in_dict, exclude = [addr])
 
 				# Process depending on data type
-				data_type = data_in_dict["type"]
+				data_type = data_in_dict["jsontype"]
 				process_incoming_data(data_type, data_in_dict)
 					
 			
