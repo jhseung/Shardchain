@@ -22,6 +22,7 @@ class Node:
 		         activity_level = 0.5,
 				 mainblock = None,
 		         port_no):
+
 		self.master_addr = master_addr
 		self.neighbors = neighbors
 		self.current_chain = None
@@ -37,30 +38,19 @@ class Node:
 		self.transaction_issue_freq = 1
 		self.hash_rate = 100
 
-	# def mine(self):
-	# 	self.miner = consensus.Miner(self.current_mining_block)
-	# 	nonce = self.miner.mine_block()
-	# 	if nonce is not None:
-	# 		self.current_mining_block.confirm_header(nonce)
-	# 		#Propagate block
-	# 		return
-	# 	else:
-	# 		#Handle unsuccessful mining attempt
-	# 		return
-
-	# def handle_transaction(self, transaction, pending_tran=False):
-	# 	if transaction.is_intershard == False:
-	# 		mine(self)
-	# 	else:
-	# 		if pending_tran == False:
-	# 			shard_id_sender = block_util.to_shard(transaction.sender)
-	# 			shard_id_receiver = block_util.to_shard(transaction.receiver)
-	# 			if self.current_chain == shard_id_sender: #mine this block
-	# 				mine(self)
-	# 			elif self.current_chain != shard_id_sender and shard_id_sender != shard_id_receiver:
-	# 				self.pending_transactions.append(transaction)
-	# 		else:
-	# 			mine(self)
+	def handle_transaction(self, transaction, pending_tran=False):
+		if transaction.is_intershard == False:
+			mine(self)
+		else:
+			if pending_tran == False:
+				shard_id_sender = block_util.to_shard(transaction.sender)
+				shard_id_receiver = block_util.to_shard(transaction.receiver)
+				if self.current_chain == shard_id_sender: #mine this block
+					mine(self)
+				elif self.current_chain != shard_id_sender and shard_id_sender != shard_id_receiver:
+					self.pending_transactions.append(transaction)
+			else:
+				mine(self)
 
 	def post_pending_transactions(self):
 		for transaction in self.pending_transactions:
@@ -71,13 +61,26 @@ class Node:
 
 		# Start issuing transactions
 		tx_issuer = threading.Thread(target = issue_transactions,
-									 args = (self.communicator, self.transactions_to_issue, self.neighbors, self.transaction_issue_freq))
+									 args = (self.communicator, 
+									 	     self.transactions_to_issue, 
+									 	     self.neighbors, 
+									 	     self.transaction_issue_freq))
 		tx_issuer.start()
 
+		# Start mining
+		miner = Miner(self)
+		block_found_event = miner.get_found_event()    # Gets fired when a new block is found 
+													   # either through mining or through flooding
+		miner.start()
+
 		while True:
-			# Start mining
-			miner = 
-			miner.start
+			
+			if block_found_event.is_set():
+				# block is found
+				# rejoice
+				# update model tell everyone
+				# the block may be mine may not be mine
+
 			# Listen for incoming data
 			received_data = self.communicator.listen()
 
@@ -86,18 +89,18 @@ class Node:
 				data_in_dict = json.loads(data.decode("utf-8"))
 
 				# Already seen this data before; ignore
-				if hash_json(data) in self.seen_hashes:
+				cur_data_hash = hash_json(data)
+				if cur_data_hash in self.seen_hashes:
 					continue
 				else:
-				#Propagate
+					# Mark as seen
+					self.seen_hashes.add(cur_data_hash)
 
 				# Relay to all my neighbors
 				self.communicator.broadcast_json(self.neighbors, data_in_dict, exclude = [addr])
 
 				# Process depending on data type
-
 				data_type = data_in_dict["jsontype"]
-
 				process_incoming_data(data_type, data_in_dict)
 
 
@@ -148,6 +151,7 @@ class Node:
 					# If all shards are full then just mine the main block
 					else:
 						self.current_mining_block = self.mainblock
+
 		#If data type is a main block
 		elif data_type == "main_block":
 			block = block_util.json_to_block(data_in_dict)
