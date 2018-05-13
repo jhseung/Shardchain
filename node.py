@@ -30,4 +30,3 @@ class Node:
 
 	def run(self):
 		while True:
-			
