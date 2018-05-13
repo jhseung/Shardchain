@@ -2,7 +2,7 @@ import node
 import main_block, shard_block
 import transaction
 import random
-from config import NUMBER_OF_NODES, NUMBER_OF_SHARDS, NUMBER_OF_TRANSACTIONS, TIME_MAINBLOCK, MINING_REWARD
+from config import NUMBER_OF_NODES, NUMBER_OF_SHARDS, NUMBER_OF_TRANSACTIONS, TIME_MAINBLOCK, MINING_REWARD, NETWORK_HASHRATE
 
 class Master():
     def __init__(self):
@@ -13,6 +13,7 @@ class Master():
         self.mining_reward = MINING_REWARD
         self.nodes = []
         self.blockchain = self._instantiate_blockchain()
+        self.network_hashrate = NETWORK_HASHRATE
 
     def _instantiate_blockchain(self):
         GENESIS_BLOCK = main_block.MainBlock(None)
