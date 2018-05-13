@@ -51,14 +51,12 @@ class ShardBlock:
     :return: <bool>
     """
     def _is_transaction_valid(self, transaction):
-        if block_util.to_shard(transaction.sender) == self.shard_id and\
-           transaction.sender not in self.starting_state:
-            return False
-        if self.starting_state[transaction.sender] < transaction.amount:
-            return False
+        if block_util.to_shard(transaction.sender) == self.shard_id:
+            if transaction.sender not in self.starting_state:
+                return False
+            if self.starting_state[transaction.sender] < transaction.amount:
+                return False
         if transaction.amount < 0:
-            return False
-        if len(self.transactions) > ETH_TX_BLOCK:
             return False
         return True
 

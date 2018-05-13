@@ -88,20 +88,20 @@ class Node:
 
 		# Start issuing transactions
 		tx_issuer = threading.Thread(target = issue_transactions,
-									 args = (self.communicator, 
-									 	     self.transactions_to_issue, 
-									 	     self.neighbors, 
+									 args = (self.communicator,
+									 	     self.transactions_to_issue,
+									 	     self.neighbors,
 									 	     self.transaction_issue_freq))
 		tx_issuer.start()
 
 		# Start mining
 		miner = Miner(self)
-		block_found_event = miner.get_found_event()    # Gets fired when a new block is found 
+		block_found_event = miner.get_found_event()    # Gets fired when a new block is found
 													   # either through mining or through flooding
 		miner.start()
 
 		while True:
-			
+
 			if block_found_event.is_set():
 				# block is found
 				# rejoice
@@ -130,10 +130,19 @@ class Node:
 				data_type = data_in_dict["jsontype"]
 				process_incoming_data(data_type, data_in_dict)
 
+	"""
+	Tries to retrieve the full history of current shard header block
+	If block is not available, send a request to master for block info.
+	"""
+	def retrieve_full_history(self):
+		raise NotImplementedError()
 
-
-			raise NotImplementedError()
-
+	"""
+	Process incoming data:
+	1) Transaction
+	2) Shard block
+	3) Main block
+	"""
 	def process_incoming_data(self, data_type, data_in_dict):
 		#If the data type is a transaction
 		if data_type == "tx":
@@ -165,6 +174,7 @@ class Node:
 					# If all shards are full then just mine the main block
 					else:
 						self.current_mining_block = self.mainblock
+				self.master_addr.update_block(block)
 
 		#If data type is a main block
 		elif data_type == "main_block":
@@ -173,6 +183,9 @@ class Node:
 			if consensus.validate_pow(block) and self.mainblock.block_no < block.block_no:
 				#Update mainblock
 				self.mainblock = block
+
+				#Update master address block
+				self.master_addr.update_block(block)
 			#handle stuff?
 
 

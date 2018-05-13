@@ -31,7 +31,7 @@ class Master():
     def _instantiate_nodes(self):
         #generate NUMBER_OF_NODES nodes
         for i in range(NUMBER_OF_NODES):
-            new_node = node(None, [], 0.5, self.genesis_block, i+8000)
+            new_node = node(master_addr=self, [], 0.5, self.genesis_block, i+8000)
             self.nodes.append(new_node)
 
         #Assign each node some neighbors
