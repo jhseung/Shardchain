@@ -103,6 +103,9 @@ class MainBlock:
 			return True
 		return False
 
+	"""
+	Retrieves the last n parents from our current block
+	"""
 	def retrieve_parents(self, n):
 		pointer = self.parent_block
 		array = []
@@ -111,6 +114,10 @@ class MainBlock:
 			pointer = pointer.parent_block
 		return array
 
+	"""
+	Determines the fixed lengths for each shard k by computing the average total transactions per shard over
+	the past EPOCH_LENGTHs. 
+	"""
 	def adjust_shard_length(self):
 		shard_transaction_map = {}
 		for shard_id in self.shards:
@@ -120,4 +127,3 @@ class MainBlock:
 				transactions_per_shard = transactions_per_shard + len(parent_block.shards[shard_id].transactions)
 			shard_transaction_map[shard_id] = transactions_per_shard / (EPOCH_LENGTH*ETH_TX_BLOCK)
 			self.shard_length[shard_id] = shard_transaction_map[shard_id]
-
