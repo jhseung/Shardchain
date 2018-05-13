@@ -2,7 +2,10 @@ import time
 import json, random, hashlib
 import block_util
 import shard_block
-from config import NUMBER_OF_SHARDS, EPOCH_LENGTH, ETH_TX_BLOCK
+from config import NUMBER_OF_SHARDS, EPOCH_LENGTH, ETH_TX_BLOCK, TIME_MAINBLOCK, NUMBER_OF_NODES
+import node
+import master
+
 class MainBlock:
 	"""
 	:block_no: <str> current block number
@@ -25,7 +28,8 @@ class MainBlock:
 				 shard_length = {}, #respective shard length for shard
 				 timestamp = time.time(),
 				 difficulty = 0,
-				 nonce = 0):
+				 nonce = 0,
+				 master):
 
 		self.block_no = -1
 		self.parent_hash = parent_hash
@@ -36,6 +40,8 @@ class MainBlock:
 		self.difficulty = difficulty
 		self.nonce = nonce
 		self.jsontype = 'main'
+		self.network_hashrate = 0 # may have to change the hashrate
+		self.master = master
 
 	def retrieve_shard(self, sender=None, k=None):
 		if k is not None:
@@ -113,6 +119,11 @@ class MainBlock:
 
 	def adjust_shard_length(self):
 		shard_transaction_map = {}
+
+		#calculate the current network hashrate
+		for node in self.master.nodes:
+			self.network_hashrate += node.hashrate
+
 		for shard_id in self.shards:
 			transactions_per_shard = 0
 			parents = self.retrieve_parents(EPOCH_LENGTH)
@@ -121,3 +132,5 @@ class MainBlock:
 			shard_transaction_map[shard_id] = transactions_per_shard / (EPOCH_LENGTH*ETH_TX_BLOCK)
 			self.shard_length[shard_id] = shard_transaction_map[shard_id]
 
+			#adjust the shard difficulty
+			self.shards[shard_id].difficulty = TIME_MAINBLOCK *self.network_hashrate/(1.32*self.shard_length[shard_id])
