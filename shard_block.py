@@ -1,5 +1,6 @@
 import time, hashlib
 import copy
+from config import ETH_TX_BLOCK
 
 class ShardBlock:
     """
@@ -56,6 +57,8 @@ class ShardBlock:
             return False
         if transaction.amount < 0:
             return False
+        if len(self.transactions) > ETH_TX_BLOCK:
+            return False
         return True
 
     """
@@ -71,12 +74,9 @@ class ShardBlock:
             print "INVALID TRANSACTION"
             return
         self.starting_state[transaction.sender] -= transaction.amount
-        if transaction.recipient not in self.starting_state and transaction.isInter == False:
+        if transaction.recipient not in self.starting_state and not transaction.is_intershard:
             self.resulting_state[transaction.recipient] = transaction.amount
-        elif transaction.recipient in self.starting_state and transaction.isInter == False:
-            
-        else:
-
+        elif transaction.recipient in self.starting_state and not transaction.is_intershard:
             self.resulting_state[transaction.recipient] = self.resulting_state[transaction.recipient] +\
             transaction.amount
 

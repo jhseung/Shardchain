@@ -27,6 +27,17 @@ class Node:
 		self.socket.connect((socket.gethostname(), port_no))
 		self.pending_transactions = []
 
+	def mine(self):
+		self.miner = consensus.Miner(self.current_mining_block)
+		nonce = self.miner.mine_block()
+		if nonce is not None:
+			self.current_mining_block.confirm_header(nonce)
+			#Propagate block
+			return
+		else:
+			#Handle unsuccessful mining attempt
+			return
+
 	def handle_transaction(self, transaction, pending_tran=False):
 		if transaction.is_intershard == False:
 			mine(self)

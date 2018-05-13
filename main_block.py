@@ -2,7 +2,7 @@ import time
 import json, random, hashlib
 import block_util
 import shard_block
-from config import NUMBER_OF_SHARDS
+from config import NUMBER_OF_SHARDS, EPOCH_LENGTH, ETH_TX_BLOCK
 
 class MainBlock:
 	"""
@@ -94,19 +94,18 @@ class MainBlock:
 
 	def retrieve_parents(self, n):
 		pointer = self.parent_block
-		for x in range(n):
+		array = []
+		for _ in range(n):
 			array.append(pointer)
 			pointer = pointer.parent_block
 		return array
 
 	def adjust_shard_length(self):
-		N = 10 #some random constant
-		Eth_Transactions_Per_Block = 138
 		shard_transaction_map = {}
 		for shard_id in self.shards:
 			transactions_per_shard = 0
-			parents = self.retrieve_parents(N)
+			parents = self.retrieve_parents(EPOCH_LENGTH)
 			for parent_block in parents:
 				transactions_per_shard = transactions_per_shard + len(parent_block.shards[shard_id].transactions)
-			shard_transaction_map[shard_id] = transactions_per_shard / (N*Eth_Transactions_Per_Block)
+			shard_transaction_map[shard_id] = transactions_per_shard / (EPOCH_LENGTH*ETH_TX_BLOCK)
 			self.shard_length[shard_id] = shard_transaction_map[shard_id]

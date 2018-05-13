@@ -14,10 +14,10 @@ class Transaction:
         self.sender = sender
         self.recipient = recipient
         self.amount = amount
-        self.is_intershard = self.is_intershard()
+        self.is_intershard = self._is_intershard()
         self.jsontype = "transaction"
 
-    def is_intershard(self):
+    def _is_intershard(self):
         if block_util.to_shard(self.sender) == block_util.to_shard(self.recipient):
             return True
         else:
