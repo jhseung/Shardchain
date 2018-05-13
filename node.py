@@ -79,7 +79,7 @@ class Node:
 				self.communicator.broadcast_json(self.neighbors, data_in_dict, exclude = [addr])
 
 				# Process depending on data type
-				data_type = in_json["type"]
+				data_type = data_in_dict["jsontype"]
 				process_incoming_data(data_type, data_in_dict)
 					
 			
@@ -88,7 +88,7 @@ class Node:
 
 	def process_incoming_data(self, data_type, data_in_dict):
 
-		if data_type == "tx":
+		if data_type == "transaction":
 			""" TODO
 			If tx is in my current_shard,
 				1) verify it (i.e. state transition is valid)
@@ -96,14 +96,14 @@ class Node:
 			"""
 			pass
 
-		elif data_type == "shard_block":
+		elif data_type == "shard":
 			""" TODO
 
 
 			"""
 			pass
 
-		elif data_type == "main_block":
+		elif data_type == "main":
 			pass
 
 		else:
