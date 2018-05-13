@@ -49,7 +49,7 @@ def block_to_json(block):
 """
 Returns appropriate shard for transaction
 
-:param transaction: <Transaction> transaction to be assigned a shard
+:param account_id: <account_id>
 :return: <str> shard number
 """
 def to_shard(account_id):

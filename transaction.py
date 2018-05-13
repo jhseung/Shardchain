@@ -1,5 +1,3 @@
-import block_util
-
 class Transaction:
     """
     :sender: <str> sender's account address
@@ -9,16 +7,10 @@ class Transaction:
     def __init__(self,
                 sender,
                 recipient,
-                amount):
+                amount,
+                isInter):
         self.sender = sender
         self.recipient = recipient
         self.amount = amount
-        self.is_intershard = self.is_intershard()
         self.jsontype = transaction
-           
-    def is_intershard(self):
-        if block_util.to_shard(self.sender) == block_util.to_shard(self.recipient):
-            return True
-        else:
-            return False
-        
+        self.isInter = isInter
