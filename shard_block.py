@@ -36,7 +36,8 @@ class ShardBlock:
         self.starting_state = starting_state
         self.resulting_state = copy.deepcopy(starting_state) #copying dic to maintain starting_state for now
         self.timestamp = timestamp
-        self.difficulty = difficulty
+        #need to calculate hashrate
+        self.difficulty = TIME_MAINBLOCK *hashrate/(1.32*self.shard_length[shard_id])
         self.nonce = nonce
         self.jsontype = 'shard'
 

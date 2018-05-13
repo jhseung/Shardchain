@@ -2,8 +2,7 @@ import time
 import json, random, hashlib
 import block_util
 import shard_block
-from config import NUMBER_OF_SHARDS, EPOCH_LENGTH, ETH_TX_BLOCK, TIME_MAINBLOCK
-
+from config import NUMBER_OF_SHARDS, EPOCH_LENGTH, ETH_TX_BLOCK
 class MainBlock:
 	"""
 	:block_no: <str> current block number
@@ -121,4 +120,4 @@ class MainBlock:
 				transactions_per_shard = transactions_per_shard + len(parent_block.shards[shard_id].transactions)
 			shard_transaction_map[shard_id] = transactions_per_shard / (EPOCH_LENGTH*ETH_TX_BLOCK)
 			self.shard_length[shard_id] = shard_transaction_map[shard_id]
-			self.difficulty = TIME_MAINBLOCK *hashrate/(1.32*self.shard_length[shard_id])
+

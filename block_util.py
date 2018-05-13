@@ -39,7 +39,6 @@ def block_to_json(block):
 	if self.jsontype == 'main':
 		return json.dumps({block_no: block.block_no,
 						parent_hash: block.parent_hash,
-						parent_block: block.parent_block,
 						shards: block.shards,
 						shard_length: block.shard_length,
 						timestamp: block.timestamp,
