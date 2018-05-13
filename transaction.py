@@ -11,6 +11,6 @@ class Transaction:
         self.sender = sender
         self.recipient = recipient
         self.amount = amount
-        self.type = transaction
+        self.jsontype = transaction
 
         

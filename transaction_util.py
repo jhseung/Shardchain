@@ -5,4 +5,4 @@ def tx_to_json(tx):
 	return json.dumps({sender: tx.sender
 					   recipient: tx.recipient,
 					   amount: tx.amount,
-					   type: tx.type})
+					   jsontype: tx.jsontype})

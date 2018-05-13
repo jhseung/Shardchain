@@ -36,7 +36,7 @@ class ShardBlock:
         self.timestamp = timestamp
         self.difficulty = difficulty
         self.nonce = nonce
-        self.type = 'shard'
+        self.jsontype = 'shard'
 
     """
     Verifies if a transaction is valid

@@ -37,7 +37,7 @@ class MainBlock:
 		self.timestamp = timestamp
 		self.difficulty = difficulty
 		self.nonce = nonce
-		self.type = 'main'
+		self.jsontype = 'main'
 
 	def retrieve_shard(self, sender=None, k=None):
 		if k is not None:
