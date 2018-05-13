@@ -12,7 +12,7 @@ class Master():
         self.time_mainblock = TIME_MAINBLOCK
         self.mining_reward = MINING_REWARD
         self.nodes = []
-        self.blockchain = None
+        self.blockchain = self._instantiate_blockchain()
 
     def _instantiate_blockchain(self):
         GENESIS_BLOCK = main_block.MainBlock(None)
@@ -24,8 +24,7 @@ class Master():
             GENESIS_BLOCK.shards[k] = GENESIS_SHARD_BLOCK
 
         GENESIS_BLOCK.adjust_shard_length()
-
-        self.blockchain = GENESIS_BLOCK
+        return GENESIS_BLOCK
 
     def _instantiate_nodes(self):
         #generate NUMBER_OF_NODES nodes
