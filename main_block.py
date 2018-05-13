@@ -16,8 +16,8 @@ class MainBlock:
 		key - shard ID using to_shard function
 		value - int representing min length cap of shard
 	:timestamp: <float> timestamp of when block was instantiated
-	:difficulty: ???
-	:nonce: ???
+	:difficulty: number that hash produced must be lower than
+	:nonce: nonce of block that satisfies difficulty. Initialized to 0.
 	"""
 	def __init__(self,
 				 parent_hash,
@@ -38,6 +38,13 @@ class MainBlock:
 		self.nonce = nonce
 		self.jsontype = 'main'
 
+	"""
+	Given sender's account id or shard_id return canonical block for that shard
+
+	:optional sender: <str> account id
+	:optional k: <int> shard_id
+	:return: <ShardBlock> if sender or k is valid. Otherwise return None.
+	"""
 	def retrieve_shard(self, sender=None, k=None):
 		if k is not None:
 			return self.shards[k]
@@ -48,16 +55,15 @@ class MainBlock:
 						return shard
 		return None
 
+	"""
+	Confirms whether said shard is valid or not
+	If shard is
+	"""
 	def _is_valid_shard(self, shard):
-		latest_shard_block = self.shards[shard.shard_id]
-		prev_mined_block = self.parent_block.shards[shard.shard_id]
+		latest_shard_block_no = self.shards[shard.shard_id].block_no
+		prev_mined_block_no = self.parent_block.shards[shard.shard_id].block_no
 		min_length = self.shard_length[shard.shard_id]
-		for _ in range(min_length):
-			latest_shard_block = latest_shard_block.parent_block
-		if latest_shard_block == prev_mined_block:
-			return True
-		else:
-			return False
+		return latest_shard_block_no - prev_mined_block_no == min_length
 
 	"""
 	Adds shard to block if it is a valid shard
@@ -82,10 +88,12 @@ class MainBlock:
 
 	If valid, sets class variable header to be of header and nonce to be of valid nonce
 	:nonce: <int> or <str> that satisfies block
+	:returns None: if nonce is valid
+	otherwise raise exception if block already has a header and/or nonce is invalid
 	"""
 	def confirm_header(self, nonce):
 		if self.block_no != -1:
-			return
+			raise Exception("Header already confirmed")
 		to_hash = self.hash_contents() + nonce
 		hashed = hashlib.sha256(to_hash).hexdigest()
 		if int(hashed,16) < int(self.difficulty,16) and \
@@ -93,9 +101,12 @@ class MainBlock:
 			self.header = hashed
 			self.nonce = nonce
 			self.block_no = self.parent_block.block_no + 1
+		else:
+            raise Exception("Nonce invalid")
 
 	"""
 	Confirms if block is a valid block.
+	:returns: <bool>
 	"""
 	def is_valid_block(self):
 		hashed = hashlib.sha256(self.hash_contents() + self.nonce)
