@@ -17,7 +17,7 @@ def verify(block):
 
 """ Returns the hash value of the block """
 def get_hash(block):
-	raise NotImplementedError()
+	return block.hash_block()
 
 """ Convert block to json """
 def block_to_json(block):
