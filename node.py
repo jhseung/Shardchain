@@ -1,4 +1,4 @@
-import block, block_util, comms
+import block, block_util, comms, consensus
 import hashlib
 
 """ Represents a node in the network
@@ -26,6 +26,10 @@ class Node:
 		self.socket = socket.socket()
 		self.socket.connect((socket.gethostname(), port_no))
 
+	def mine(self):
+		self.miner = consensus.Miner(self.current_mining_block)
+		nonce = self.miner.mine_block()
+
 	def run(self):
 		while True:
 			raise NotImplementedError()
@@ -33,24 +37,7 @@ class Node:
 	def broadcast_tx(self, transaction):
 		for n in self.neighbors:
 			#TODO: broadcast transaction to neighbors
-			return
-
-    def is_block_valid(self, block):
-        hashed = block.hash_block() + 
-        if hashed[:block.difficulty] == "0" * block.difficulty:
-            return True
-        else
-            return False
-
-	def mine_block(self):
-		while True:
-			if len(self.shards) != NUMBER_OF_SHARDS:
-				time.sleep(0.1)
-			else:
-				self.nonce = self.nonce + random.uniform(0,1)
-				if is_block_valid():
-                    bl.current_block_no = self.parent_block_no += 1
-                    return
+			pass
 
 	def receive_tx(self, transaction):
 		#self.broadcast_tx(transaction)
