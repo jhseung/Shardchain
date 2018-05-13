@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-import block, block_util, comms, consensus, communicator
-=======
-import block, block_util, comms, consensus, transaction
->>>>>>> a852a3989433b30f1e78ad50061e22905a36639d
+import block, block_util, comms, consensus, communicator, transaction
 import hashlib
 from collections import defaultdict
 import json
@@ -63,10 +59,6 @@ class Node:
 		for transaction in self.pending_transactions:
 			handle_transaction(transaction, True)
 		self.pending_transactions = []
-
-	def mine(self):
-		self.miner = consensus.Miner(self.current_mining_block)
-		nonce = self.miner.mine_block()
 
 	def run(self):
 		while True:
