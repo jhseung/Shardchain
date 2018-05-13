@@ -12,12 +12,20 @@ class Master():
         self.time_mainblock = TIME_MAINBLOCK
         self.mining_reward = MINING_REWARD
         self.nodes = []
+        self.blockchain = None
 
-        GENESIS_BLOCK = main_block.init(None)
-        confirm_header(GENESIS_BLOCK.nonce)
+    def _instantiate_blockchain(self):
+        GENESIS_BLOCK = main_block.MainBlock(None)
+        confirm_header(GENESIS_BLOCK, GENESIS_BLOCK.nonce)
 
-        self.genesis_block = GENESIS_BLOCK
-        self.blockchain = [self.genesis_block]
+        for k in range(0, NUMBER_OF_SHARDS):
+            GENESIS_SHARD_BLOCK = shard_block.ShardBlock(k, None, None, None)
+            GENESIS_SHARD_BLOCK.confirm_header(GENESIS_SHARD_BLOCK, GENESIS_SHARD_BLOCK.nonce)
+            GENESIS_BLOCK.shards[k] = GENESIS_SHARD_BLOCK
+
+        GENESIS_BLOCK.adjust_shard_length()
+
+        self.blockchain = GENESIS_BLOCK
 
     def _instantiate_nodes(self):
         #generate NUMBER_OF_NODES nodes
