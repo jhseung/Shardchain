@@ -1,4 +1,5 @@
 import block_util
+import hashlib
 
 class Transaction:
     """
@@ -22,3 +23,5 @@ class Transaction:
         else:
             return False
         
+    def __hash__(self):
+        return hashlib.sha256(self.sender + self.recipient + self.amount).hexdigest()
