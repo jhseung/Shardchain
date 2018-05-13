@@ -68,7 +68,6 @@ class ShardBlock:
     :return: None
     """
     def add_transaction(self, transaction):
-        self.transactions.append(transaction)
         if not self._is_transaction_valid(transaction):
             raise Exception("Invalid transaction")
         if len(self.transaction) == ETH_TX_BLOCK:
