@@ -1,14 +1,17 @@
-import random, hashlib
+import random, hashlib, threading
 
-class Miner():
-    def __init__(self, block):
-        self.block = block
-        self.nonce = random.randint(0,100000000)
+class Miner(threading.Thread):
+    def __init__(self, cur_node):
+        self.cur_node = cur_node
+        self.found_event = threading.Event()
+        return found_event
 
-	def mine_block(self, rounds=1000, start_nonce=0):
-		bl, a_nonce = mine(block, start_nonce, rounds)
-        if bl is not None:
-            return a_nonce
+	def run(self):
+        cur_nonce = random.randint(0, 1000000)
+        while not found_event.is_set():
+            bl, cur_nonce = mine(block, cur_nonce, rounds)
+                if bl is not None:
+                    return final_nonce
         return None
 
 def validate_pow(block, nonce):
@@ -20,6 +23,7 @@ def validate_pow(block, nonce):
 
 def mine(block, nonce, difficulty, rounds=1000):
     assert isinstance(nonce, int)
+
     for i in range(rounds):
         if validate_pow(block, nonce):
             return block, nonce

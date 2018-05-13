@@ -30,30 +30,34 @@ class Node:
 		self.communicator = communicator.Communicator(("localhost", port_no))
 		self.pending_transactions = []
 
-	def mine(self):
-		self.miner = consensus.Miner(self.current_mining_block)
-		nonce = self.miner.mine_block()
-		if nonce is not None:
-			self.current_mining_block.confirm_header(nonce)
-			#Propagate block
-			return
-		else:
-			#Handle unsuccessful mining attempt
-			return
+		self.transactions_to_issue = []
+		self.transaction_issue_freq = 1
+		self.hash_rate = 100
 
-	def handle_transaction(self, transaction, pending_tran=False):
-		if transaction.is_intershard == False:
-			mine(self)
-		else:
-			if pending_tran == False:
-				shard_id_sender = block_util.to_shard(transaction.sender)
-				shard_id_receiver = block_util.to_shard(transaction.receiver)
-				if self.current_chain == shard_id_sender: #mine this block
-					mine(self)
-				elif self.current_chain != shard_id_sender and shard_id_sender != shard_id_receiver:
-					self.pending_transactions.append(transaction)
-			else:
-				mine(self)
+	# def mine(self):
+	# 	self.miner = consensus.Miner(self.current_mining_block)
+	# 	nonce = self.miner.mine_block()
+	# 	if nonce is not None:
+	# 		self.current_mining_block.confirm_header(nonce)
+	# 		#Propagate block
+	# 		return
+	# 	else:
+	# 		#Handle unsuccessful mining attempt
+	# 		return
+
+	# def handle_transaction(self, transaction, pending_tran=False):
+	# 	if transaction.is_intershard == False:
+	# 		mine(self)
+	# 	else:
+	# 		if pending_tran == False:
+	# 			shard_id_sender = block_util.to_shard(transaction.sender)
+	# 			shard_id_receiver = block_util.to_shard(transaction.receiver)
+	# 			if self.current_chain == shard_id_sender: #mine this block
+	# 				mine(self)
+	# 			elif self.current_chain != shard_id_sender and shard_id_sender != shard_id_receiver:
+	# 				self.pending_transactions.append(transaction)
+	# 		else:
+	# 			mine(self)
 
 	def post_pending_transactions(self):
 		for transaction in self.pending_transactions:
@@ -61,8 +65,16 @@ class Node:
 		self.pending_transactions = []
 
 	def run(self):
-		while True:
 
+		# Start issuing transactions
+		tx_issuer = threading.Thread(target = issue_transactions,
+									 args = (self.communicator, self.transactions_to_issue, self.neighbors, self.transaction_issue_freq))
+		tx_issuer.start()
+
+		while True:
+			# Start mining
+			miner = 
+			miner.start
 			# Listen for incoming data
 			received_data = self.communicator.listen()
 
@@ -79,7 +91,7 @@ class Node:
 				self.communicator.broadcast_json(self.neighbors, data_in_dict, exclude = [addr])
 
 				# Process depending on data type
-				data_type = in_json["type"]
+				data_type = data_in_dict["type"]
 				process_incoming_data(data_type, data_in_dict)
 					
 			
@@ -108,6 +120,13 @@ class Node:
 
 		else:
 			pass	
+
+
+def issue_transactions(communicator, tx_list, neighbors, freq):
+	for tx in tx_list:
+		time.sleep(freq)
+		communicator.broadcast_tx(neighbors, tx)
+
 
 def hash_json(data_in_bytes):
 	return hashlib.sha256(data_in_bytes.encode('utf-8')).hexdigest()
