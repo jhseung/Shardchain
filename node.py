@@ -1,5 +1,11 @@
+<<<<<<< HEAD
+import block, block_util, comms, consensus, communicator
+=======
 import block, block_util, comms, consensus, transaction
+>>>>>>> a852a3989433b30f1e78ad50061e22905a36639d
 import hashlib
+from collections import defaultdict
+import json
 
 """ Represents a node in the network
 
@@ -23,8 +29,9 @@ class Node:
 		self.current_chain = None
 		self.current_mining_block = None
 		self.activity_level = activity_level
-		self.socket = socket.socket()
-		self.socket.connect((socket.gethostname(), port_no))
+
+		self.seen_hashes = defaultdict(int)       # Hash values encountered from the flooding network
+		self.communicator = communicator.Communicator(("localhost", port_no))
 		self.pending_transactions = []
 
 	def mine(self):
@@ -60,3 +67,55 @@ class Node:
 	def mine(self):
 		self.miner = consensus.Miner(self.current_mining_block)
 		nonce = self.miner.mine_block()
+
+	def run(self):
+		while True:
+
+			# Listen for incoming data
+			received_data = self.communicator.listen()
+
+			# Process received information
+			for (data, addr) in received_data:
+				data_in_dict = json.loads(data.decode("utf-8"))
+
+				# Already seen this data before; ignore
+				if hash_json(data) in self.seen_hashes:
+					continue
+				else: 
+
+				# Relay to all my neighbors
+				self.communicator.broadcast_json(self.neighbors, data_in_dict, exclude = [addr])
+
+				# Process depending on data type
+				data_type = in_json["type"]
+				process_incoming_data(data_type, data_in_dict)
+					
+			
+
+			raise NotImplementedError()
+
+	def process_incoming_data(self, data_type, data_in_dict):
+
+		if data_type == "tx":
+			""" TODO
+			If tx is in my current_shard,
+				1) verify it (i.e. state transition is valid)
+				2) store it somewhere
+			"""
+			pass
+
+		elif data_type == "shard_block":
+			""" TODO
+
+
+			"""
+			pass
+
+		elif data_type == "main_block":
+			pass
+
+		else:
+			pass	
+
+def hash_json(data_in_bytes):
+	return hashlib.sha256(data_in_bytes.encode('utf-8')).hexdigest()
