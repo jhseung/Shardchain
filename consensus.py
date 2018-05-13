@@ -16,7 +16,7 @@ class Miner(threading.Thread):
 
 def validate_pow(block, nonce):
     hashed = block.hash_contents() + nonce
-    if hashed[:block.difficulty] == "0" * block.difficulty:
+    if int(hashed,16) < int(block.difficulty,16):
         return True
     else:
         return False

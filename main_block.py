@@ -2,7 +2,7 @@ import time
 import json, random, hashlib
 import block_util
 import shard_block
-from config import NUMBER_OF_SHARDS, EPOCH_LENGTH, ETH_TX_BLOCK
+from config import NUMBER_OF_SHARDS, EPOCH_LENGTH, ETH_TX_BLOCK, TIME_MAINBLOCK
 
 class MainBlock:
 	"""
@@ -20,7 +20,6 @@ class MainBlock:
 	:nonce: ???
 	"""
 	def __init__(self,
-				 block_no,
 				 parent_hash,
 				 parent_block = None,
 				 shards = {}, #contains key-value mapping of shards
@@ -29,7 +28,7 @@ class MainBlock:
 				 difficulty = 0,
 				 nonce = 0):
 
-		self.block_no = block_no
+		self.block_no = -1
 		self.parent_hash = parent_hash
 		self.parent_block = parent_block
 		self.shards = shards
@@ -85,12 +84,25 @@ class MainBlock:
 	:nonce: <int> or <str> that satisfies block
 	"""
 	def confirm_header(self, nonce):
+		if self.block_no != -1:
+			return
 		to_hash = self.hash_contents() + nonce
 		hashed = hashlib.sha256(to_hash).hexdigest()
-		if hashed[:self.difficulty] == "0" * self.difficulty and \
+		if int(hashed,16) < int(self.difficulty,16) and \
 		   len(self.shards) == NUMBER_OF_SHARDS :
 			self.header = hashed
 			self.nonce = nonce
+			self.block_no = self.parent_block.block_no + 1
+
+	"""
+	Confirms if block is a valid block.
+	"""
+	def is_valid_block(self):
+		hashed = hashlib.sha256(self.hash_contents() + self.nonce)
+		if int(hashed,16) < int(self.difficulty,16) and \
+		   len(self.shards) == NUMBER_OF_SHARDS :
+			return True
+		return False
 
 	def retrieve_parents(self, n):
 		pointer = self.parent_block
@@ -109,3 +121,4 @@ class MainBlock:
 				transactions_per_shard = transactions_per_shard + len(parent_block.shards[shard_id].transactions)
 			shard_transaction_map[shard_id] = transactions_per_shard / (EPOCH_LENGTH*ETH_TX_BLOCK)
 			self.shard_length[shard_id] = shard_transaction_map[shard_id]
+			self.difficulty = TIME_MAINBLOCK *hashrate/(1.32*self.shard_length[shard_id])

@@ -22,7 +22,7 @@ def get_hash(block):
 """ Convert block to json """
 def block_to_json(block):
 	assert isinstance(block, shard_block.ShardBlock, main_block.MainBlock)
-	if block.block_type == 'shard':
+	if block.jsontype == 'shard':
 		return json.dumps({shard_id: block.shard_id,
 						parent_block_no: block.parent_block_no,
 						block_no: block.block_no,
@@ -36,7 +36,7 @@ def block_to_json(block):
 						nonce: block.nonce,
 						jsontype: block.jsontype})
 
-	if self.block_type == 'main':
+	if self.jsontype == 'main':
 		return json.dumps({block_no: block.block_no,
 						parent_hash: block.parent_hash,
 						parent_block: block.parent_block,
