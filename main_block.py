@@ -84,13 +84,12 @@ class MainBlock:
 				if hashed[:self.difficulty] == "0" * self.difficulty:
 					return
 
-	def retrieve_parents(self, parent, n, array):
-		if n == 0 or parent.parent_block == None:
-			return array
-		else:
-			while n > 0:
-				array.append(parent)
-				return self.retrieve_parents(parent.parent_block , n-1, array)
+	def retrieve_parents(self, n):
+		pointer = self.parent_block
+		for x in range(n):
+			array.append(pointer)
+			pointer = pointer.parent_block
+		return array
 
 	def adjust_shard_length(self):
 		N = 10 #some random constant
@@ -98,14 +97,8 @@ class MainBlock:
 		shard_transaction_map = {}
 		for shard_id in self.shards:
 			transactions_per_shard = 0
-			parents = self.retrieve_parents(self.parent_block, N, [])
+			parents = self.retrieve_parents(N)
 			for parent_block in parents:
-				for shardBlock in parent_block.shards[shard_id]:
-					transactions_per_shard = transactions_per_shard + len(shardBlock.transactions)
-			shard_transaction_map[shard_id] = transactions_per_shard / N
-
-		for shard_id in shard_transaction_map:
-			shard_transaction_map[shard_id] = shard_transaction_map[shard_id] / Eth_Transactions_Per_Block
-
-		for shard_id in self.shards:
+				transactions_per_shard = transactions_per_shard + len(parent_block.shards[shard_id].transactions)
+			shard_transaction_map[shard_id] = transactions_per_shard / (N*Eth_Transactions_Per_Block)
 			self.shard_length[shard_id] = shard_transaction_map[shard_id]
