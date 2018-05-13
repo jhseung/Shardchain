@@ -72,9 +72,9 @@ class ShardBlock:
     def add_transaction(self, transaction):
         self.transactions.append(transaction)
         if not self._is_transaction_valid(transaction):
-            raise exception("Invalid transaction")
+            raise Exception("Invalid transaction")
         if len(self.transaction) == ETH_TX_BLOCK:
-            raise exception("Block full")
+            raise Exception("Block full")
         if transaction.is_intershard:
             self.starting_state[transaction.sender] -= transaction.amount
             if transaction.recipient not in self.starting_state:

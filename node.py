@@ -31,7 +31,20 @@ class Node:
 
 		self.seen_hashes = defaultdict(int)       # Hash values encountered from the flooding network
 		self.communicator = communicator.Communicator(("localhost", port_no))
-		self.pending_transactions = []
+		self.pending_tx = []
+		self.pending_intershard_tx = []
+
+	"""Determine if shard has filled up to q_k since the last mainblock was mined"""
+	def did_fill_q_k(self, shardblock, mainblock):
+		prev_block_no = mainblock.parent_block.shards[shardblock.shard_id].block_no
+		return shardblock.block_no - prev_block_no == mainblock.shard_length[shardblock.shard_id]
+
+	"""Return shard id of any shard that is not filled up yet"""
+	def open_shards(self, mainblock):
+		for shard_id in mainblock.shards:
+			if not self.did_fill_q_k(mainblock.shards[shard_id], mainblock):
+				return shard_id
+		return -1
 
 	def mine(self):
 		self.miner = consensus.Miner(self.current_mining_block)
@@ -48,23 +61,37 @@ class Node:
 			return
 
 	def handle_transaction(self, transaction, pending_tran=False):
-		if transaction.is_intershard == False:
-			mine(self)
-		else:
-			if pending_tran == False:
-				shard_id_sender = block_util.to_shard(transaction.sender)
-				shard_id_receiver = block_util.to_shard(transaction.receiver)
-				if self.current_chain == shard_id_sender: #mine this block
-					mine(self)
-				elif self.current_chain != shard_id_sender and shard_id_sender != shard_id_receiver:
-					self.pending_transactions.append(transaction)
-			else:
+		shard_id = block_util.to_shard(transaction.sender)
+		if not transaction.is_intershard:
+			#checks to see if shard is not filled
+			if self.current_mining_block.block_no - self.mainblock.parent_block.shards[shard_id].block_no == self.mainblock.shard_length[shard_id]
+				and self.current_chain == shard_id:
+				self.pending_tx.append(transaction)
+			elif self.current_mining_block.block_no - self.mainblock.parent_block.shards[shard_id].block_no < self.mainblock.shard_length[shard_id]
+				and self.current_chain == shard_id:
 				mine(self)
+			else:
+				pass #throwaway
+		else:
+			shard_id_receiver = block_util.to_shard(transaction.receiver)
+			if not pending_tran:
+				if self.current_chain == shard_id:
+					mine(self)
+				elif self.current_chain == shard_id:
+					self.pending_intershard_tx.append(transaction)
+			else:
+				if self.current_chain == shard_id or self.current_chain == shard_id_receiver:
+					mine(self)
 
 	def post_pending_transactions(self):
-		for transaction in self.pending_transactions:
-			handle_transaction(transaction, True)
-		self.pending_transactions = []
+		for tx in self.pending_intershard_tx:
+			handle_transaction(tx, True)
+
+		for tx in self.pending_tx:
+			handle_transaction(tx, True)
+
+		self.pending_intershard_tx = []
+		self.pending_tx = []
 
 	def run(self):
 		while True:
@@ -92,19 +119,6 @@ class Node:
 
 
 			raise NotImplementedError()
-
-	"""Determine if shard has filled up to q_k since the last mainblock was mined"""
-	def did_fill_q_k(self, shardblock, mainblock):
-		prev_block_no = mainblock.parent_block.shards[shardblock.shard_id].block_no
-		return shardblock.block_no - prev_block_no == mainblock.shard_length[shardblock.shard_id]
-
-
-	"""Return shard id of any shard that is not filled up yet"""
-	def open_shards(self, mainblock):
-		for shard_id in mainblock.shards:
-			if not self.did_fill_q_k(mainblock.shards[shard_id], mainblock):
-				return shard_id
-		return -1
 
 	def process_incoming_data(self, data_type, data_in_dict):
 		#If the data type is a transaction
