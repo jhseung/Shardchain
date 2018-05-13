@@ -76,7 +76,11 @@ class Node:
 				# Already seen this data before; ignore
 				if hash_json(data) in self.seen_hashes:
 					continue
+<<<<<<< HEAD
 				else:
+=======
+				#Propagate
+>>>>>>> e246bdbc25ebc0214f3773f637b2f5716b5e3f8c
 
 				# Relay to all my neighbors
 				self.communicator.broadcast_json(self.neighbors, data_in_dict, exclude = [addr])
@@ -111,7 +115,7 @@ class Node:
 			if self.current_chain == block.shard_id and consensus.validate_pow(block) and self.current_mining_block.block_no < block.block_no:
 				if not self.did_fill_q_k(block, self.mainblock):
 					self.current_mining_block = block
-			    else:
+				else:
 					new_shard_id = open_shards(self.mainblock)
 					if not new_shard_id == -1:
 						self.current_chain = new_shard_id
