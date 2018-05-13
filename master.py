@@ -14,6 +14,9 @@ class Master():
     def _instantiate_nodes(self):
         raise NotImplementedError()
     
+    def _create_genesis(self):
+        self.GENESIS = MainBlock()
+
     def run(self):
         raise NotImplementedError()
 

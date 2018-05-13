@@ -102,10 +102,19 @@ class ShardBlock:
             return
     	to_hash = self.hash_contents() + nonce
         hashed = hashlib.sha256(to_hash).hexdigest()
-        if hashed[:self.difficulty] == "0" * self.difficulty:
+        if int(hashed,16) < int(self.difficulty,16):
 			self.header = hashed
 			self.nonce = nonce
             self.block_no = self.parent_block_no + 1
+
+    """
+	Confirms if block is a valid block.
+	"""
+	def is_valid_block(self):
+		hashed = hashlib.sha256(self.hash_contents() + self.nonce)
+		if int(hashed,16) < int(self.difficulty,16):
+			return True
+		return False
 
     def __eq__(self, other):
         return isinstance(other, ShardBlock) and self.hash_contents() == other.hash_contents()
