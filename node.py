@@ -1,4 +1,4 @@
-import block, block_util, comms, consensus, communicator 
+import block, block_util, comms, consensus, communicator
 import transaction ,transaction_util
 import hashlib
 from collections import defaultdict
@@ -37,9 +37,12 @@ class Node:
 		self.miner = consensus.Miner(self.current_mining_block)
 		nonce = self.miner.mine_block()
 		if nonce is not None:
-			self.current_mining_block.confirm_header(nonce)
-			#Propagate block
-			return
+			try:
+				self.current_mining_block.confirm_header(nonce)
+				#propagate block
+				return
+			except Exception as e:
+				print(e)
 		else:
 			#Handle unsuccessful mining attempt
 			return

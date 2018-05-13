@@ -14,8 +14,8 @@ class ShardBlock:
     :resulting_state: <dict> key(account id)-value(amount) dictionary
         that updates upon each issued transaction
 	:timestamp: <float> timestamp of when block was instantiated
-	:difficulty: ???
-	:nonce: ???
+	:difficulty: number that hash produced must be lower than
+	:nonce: nonce of block that satisfies difficulty. Initialized to 0.
 	"""
     def __init__(self,
                  shard_id,
@@ -71,8 +71,9 @@ class ShardBlock:
     def add_transaction(self, transaction):
         self.transactions.append(transaction)
         if not self._is_transaction_valid(transaction):
-            print "INVALID TRANSACTION"
-            return
+            raise exception("Invalid transaction")
+        if len(self.transaction) == ETH_TX_BLOCK:
+            raise exception("Block full")
         self.starting_state[transaction.sender] -= transaction.amount
         if transaction.recipient not in self.starting_state and not transaction.is_intershard:
             self.resulting_state[transaction.recipient] = transaction.amount
@@ -96,19 +97,24 @@ class ShardBlock:
 
 	If valid, sets class variable header to be of header and nonce to be of valid nonce
 	:nonce: <int> or <str> that satisfies block
+	:returns None: if nonce is valid
+	otherwise raise exception if block already has a header and/or nonce is invalid
 	"""
     def confirm_header(self, nonce):
         if self.block_no != -1:
-            return
+            raise Exception("Header already confirmed")
     	to_hash = self.hash_contents() + nonce
         hashed = hashlib.sha256(to_hash).hexdigest()
         if int(hashed,16) < int(self.difficulty,16):
 			self.header = hashed
 			self.nonce = nonce
             self.block_no = self.parent_block_no + 1
+        else:
+            raise Exception("Nonce invalid")
 
     """
 	Confirms if block is a valid block.
+    :returns: <bool>
 	"""
 	def is_valid_block(self):
 		hashed = hashlib.sha256(self.hash_contents() + self.nonce)
