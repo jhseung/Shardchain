@@ -140,7 +140,5 @@ class MainBlock:
 				transactions_per_shard = transactions_per_shard + len(parent_block.shards[shard_id].transactions)
 			shard_transaction_map[shard_id] = transactions_per_shard / (EPOCH_LENGTH*ETH_TX_BLOCK)
 			self.shard_length[shard_id] = shard_transaction_map[shard_id]
-
-
 			#adjust the shard difficulty
 			self.shards[shard_id].difficulty = TIME_MAINBLOCK *NETWORK_HASHRATE/(1.32*self.shard_length[shard_id])
