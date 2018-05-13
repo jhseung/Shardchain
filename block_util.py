@@ -1,4 +1,5 @@
 import hashlib
+import json
 
 NUMBER_OF_SHARDS = 2
 
