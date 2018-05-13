@@ -1,4 +1,4 @@
-import block, block_util, comms, consensus, communicator 
+import block, block_util, comms, consensus, communicator
 import transaction ,transaction_util
 import hashlib
 from collections import defaultdict
@@ -76,7 +76,7 @@ class Node:
 				# Already seen this data before; ignore
 				if hash_json(data) in self.seen_hashes:
 					continue
-				else: 
+				else:
 
 				# Relay to all my neighbors
 				self.communicator.broadcast_json(self.neighbors, data_in_dict, exclude = [addr])
@@ -84,8 +84,8 @@ class Node:
 				# Process depending on data type
 				data_type = data_in_dict["jsontype"]
 				process_incoming_data(data_type, data_in_dict)
-					
-			
+
+
 
 			raise NotImplementedError()
 
@@ -123,7 +123,7 @@ class Node:
 			if consensus.validate_pow(block) and self.mainblock.block_no < block.block_no:
 				self.mainblock = block
 			#handle stuff?
-		
+
 
 def hash_json(data_in_bytes):
 	return hashlib.sha256(data_in_bytes.encode('utf-8')).hexdigest()
