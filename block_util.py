@@ -1,7 +1,11 @@
 import hashlib
+<<<<<<< HEAD
 import json
 
 NUMBER_OF_SHARDS = 2
+=======
+from config import NUMBER_OF_SHARDS
+>>>>>>> 8f581512a945723547ac9a4210f48742a2657548
 
 """ Verifies the current block
 
