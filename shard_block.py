@@ -18,7 +18,7 @@ class ShardBlock:
 	"""
     def __init__(self,
                  shard_id,
-				 parent_block_no, 
+				 parent_block_no,
 				 parent_hash,
 				 parent_block = None,
 				 transactions = [],
@@ -27,6 +27,7 @@ class ShardBlock:
 				 difficulty = 0,
 				 nonce = 0):
         self.shard_id = shard_id
+        self.parent_block_no = parent_block_no
         self.block_no = 0
         self.parent_hash = parent_hash
         self.parent_block = parent_block
@@ -36,6 +37,7 @@ class ShardBlock:
         self.timestamp = timestamp
         self.difficulty = difficulty
         self.nonce = nonce
+        self.jsontype = 'shard'
 
     """
     Verifies if a transaction is valid
@@ -59,7 +61,7 @@ class ShardBlock:
     """
     Adds transaction to block's list of transactions
     If transaction is invalid, does not add. (perhaps raise exception later?)
-    
+
     :param transaction: <Transaction> transaction being added
     :return: None
     """
@@ -69,23 +71,41 @@ class ShardBlock:
             print "INVALID TRANSACTION"
             return
         self.starting_state[transaction.sender] -= transaction.amount
-        if transaction.recipient not in self.starting_state:
-            self.starting_state[transaction.recipient] = transaction.amount
+        if transaction.recipient not in self.starting_state and transaction.isInter == False:
+            self.resulting_state[transaction.recipient] = transaction.amount
+        elif transaction.recipient in self.starting_state and transaction.isInter == False:
+            
         else:
-            self.starting_state[transaction.recipient] = self.starting_state[transaction.recipient] +\
+
+            self.resulting_state[transaction.recipient] = self.resulting_state[transaction.recipient] +\
             transaction.amount
-    
+
     """
-    Creates a SHA256 hash of the block
-    :return: <str> 
-    """
-    def hash_block(self):
+	Hashes the <dict> containing all head blocks of the shardchains
+	:return: <str> hash of shards
+	"""
+    def hash_contents(self):
         txs = list(map(lambda x : x.sender + x.recipient + str(x.amount), self.transactions))
         header = self.parent_hash + txs + self.timestamp
         return hashlib.sha256(header).hexdigest()
 
+    """
+    Confirms if the header and validity of the block if
+	1) hashing the block contents and nonce returns a value lower than difficulty
+	2) number of shard headers match NUMBER_OF_SHARDS
+
+	If valid, sets class variable header to be of header and nonce to be of valid nonce
+	:nonce: <int> or <str> that satisfies block
+	"""
+    def confirm_header(self, nonce):
+		to_hash = self.hash_contents() + nonce
+		hashed = hashlib.sha256(to_hash).hexdigest()
+		if hashed[:self.difficulty] == "0" * self.difficulty:
+			self.header = hashed
+			self.nonce = nonce
+
     def __eq__(self, other):
-        return isinstance(other, ShardBlock) and self.hash_block() == other.hash_block()
+        return isinstance(other, ShardBlock) and self.hash_contents() == other.hash_contents()
 
     def __hash__(self):
-        return self.hash_block()
+        return self.hash_contents()

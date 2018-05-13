@@ -12,7 +12,7 @@ class Miner():
         return None
 
 def validate_pow(block, nonce):
-    hashed = block.hash_block() + nonce
+    hashed = block.hash_contents() + nonce
     if hashed[:block.difficulty] == "0" * block.difficulty:
         return True
     else:

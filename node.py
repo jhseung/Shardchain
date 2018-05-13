@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import block, block_util, comms, consensus, communicator
+=======
+import block, block_util, comms, consensus, transaction
+>>>>>>> a852a3989433b30f1e78ad50061e22905a36639d
 import hashlib
 from collections import defaultdict
 import json
@@ -15,7 +19,7 @@ class Node:
 	:current_mining_block: <ShardBlock> longest canonical chain
 	:activity_level:
 	"""
-	def __init__(self, 
+	def __init__(self,
 		         master_addr,
 		         neighbors = [],
 		         activity_level = 0.5,
@@ -25,9 +29,29 @@ class Node:
 		self.current_chain = None
 		self.current_mining_block = None
 		self.activity_level = activity_level
-		self.seen_hashes = defaultdict(int)       # Hash values encountered from the flooding network
 
+		self.seen_hashes = defaultdict(int)       # Hash values encountered from the flooding network
 		self.communicator = communicator.Communicator(("localhost", port_no))
+		self.pending_transactions = []
+
+	def handle_transaction(self, transaction, pending_tran=False):
+		if transaction.is_intershard == False:
+			mine(self)
+		else:
+			if pending_tran == False:
+				shard_id_sender = block_util.to_shard(transaction.sender)
+				shard_id_receiver = block_util.to_shard(transaction.receiver)
+				if self.current_chain == shard_id_sender: #mine this block
+					mine(self)
+				elif self.current_chain != shard_id_sender and shard_id_sender != shard_id_receiver:
+					self.pending_transactions.append(transaction)
+			else:
+				mine(self)
+
+	def post_pending_transactions(self):
+		for transaction in self.pending_transactions:
+			handle_transaction(transaction, True)
+		self.pending_transactions = []
 
 	def mine(self):
 		self.miner = consensus.Miner(self.current_mining_block)
