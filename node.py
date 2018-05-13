@@ -1,5 +1,6 @@
 import block, block_util, comms, consensus, communicator
 import transaction ,transaction_util
+import shard_block
 import hashlib
 from collections import defaultdict
 import json
@@ -63,25 +64,40 @@ class Node:
 	def handle_transaction(self, transaction, pending_tran=False):
 		shard_id = block_util.to_shard(transaction.sender)
 		if not transaction.is_intershard:
-			#checks to see if shard is not filled
-			if self.current_mining_block.block_no - self.mainblock.parent_block.shards[shard_id].block_no == self.mainblock.shard_length[shard_id]
-				and self.current_chain == shard_id:
-				self.pending_tx.append(transaction)
-			elif self.current_mining_block.block_no - self.mainblock.parent_block.shards[shard_id].block_no < self.mainblock.shard_length[shard_id]
-				and self.current_chain == shard_id:
-				mine(self)
+			if not pending_tran:
+				try:
+					 self.current_mining_block.add_transaction(transaction)
+				except Exception as e:
+					if e == "Block full":
+						self.pending_tx.append(transaction)
 			else:
-				pass #throwaway
+				try:
+					 self.current_mining_block.add_transaction(transaction)
+				except Exception as e:
+					if e == "Block full":
+
+				self.pending_tx.pop()
+
 		else:
 			shard_id_receiver = block_util.to_shard(transaction.receiver)
 			if not pending_tran:
 				if self.current_chain == shard_id:
-					mine(self)
-				elif self.current_chain == shard_id:
+					try:
+						 self.current_mining_block.add_transaction(transaction)
+					except Exception as e:
+						if e == "Block full":
+							self.pending_intershard_tx.append(transaction)
+				elif self.current_chain == shard_id_receiver:
 					self.pending_intershard_tx.append(transaction)
 			else:
 				if self.current_chain == shard_id or self.current_chain == shard_id_receiver:
-					mine(self)
+					try:
+						 self.current_mining_block.add_transaction(transaction)
+					except Exception as e:
+						if e == "Block full":
+
+					self.pending_intershard_tx.pop()
+
 
 	def post_pending_transactions(self):
 		for tx in self.pending_intershard_tx:
@@ -89,9 +105,6 @@ class Node:
 
 		for tx in self.pending_tx:
 			handle_transaction(tx, True)
-
-		self.pending_intershard_tx = []
-		self.pending_tx = []
 
 	def run(self):
 		while True:

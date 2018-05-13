@@ -128,7 +128,7 @@ class MainBlock:
 
 	"""
 	Determines the fixed lengths for each shard k by computing the average total transactions per shard over
-	the past EPOCH_LENGTHs. 
+	the past EPOCH_LENGTHs.
 	"""
 	def adjust_shard_length(self):
 		shard_transaction_map = {}
@@ -144,4 +144,3 @@ class MainBlock:
 
 			#adjust the shard difficulty
 			self.shards[shard_id].difficulty = TIME_MAINBLOCK *NETWORK_HASHRATE/(1.32*self.shard_length[shard_id])
-
