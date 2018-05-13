@@ -23,28 +23,28 @@ def get_hash(block):
 def block_to_json(block):
 	assert isinstance(block, shard_block.ShardBlock, main_block.MainBlock)
 	if block.block_type == 'shard':
-		return json.dumps({shard_id = block.shard_id,
-						block_no: block.block_no
+		return json.dumps({shard_id: block.shard_id,
+						block_no: block.block_no,
 						parent_hash: block.parent_hash,
-						parent_block = block.parent_block,
-						transactions = block.transactions,
-						starting_state = block.starting_state,
-						resulting_state = block.resulting_state,
-						timestamp = block.timestamp,
-						difficulty = block.difficulty,
-						nonce = block.nonce,
-						type = block.type})
+						parent_block: block.parent_block,
+						transactions: block.transactions,
+						starting_state: block.starting_state,
+						resulting_state: block.resulting_state,
+						timestamp: block.timestamp,
+						difficulty: block.difficulty,
+						nonce: block.nonce,
+						type: block.type})
 
 	if self.block_type == 'main':
-		return json.dumps({block_no: block.block_no
+		return json.dumps({block_no: block.block_no,
 						parent_hash: block.parent_hash,
-						parent_block = block.parent_block,
-						shards = block.shards,
-						shard_length = block.shard_length,
-						timestamp = block.timestamp,
-						difficulty = block.difficulty,
-						nonce = block.nonce,
-						type = block.type})
+						parent_block: block.parent_block,
+						shards: block.shards,
+						shard_length: block.shard_length,
+						timestamp: block.timestamp,
+						difficulty: block.difficulty,
+						nonce: block.nonce,
+						type: block.type})
 
 """
 Returns appropriate shard for transaction
