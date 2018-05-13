@@ -1,6 +1,8 @@
 import hashlib
 import json
 from config import NUMBER_OF_SHARDS
+from shard_block import *
+from main_block import *
 
 """ Verifies the current block
 
@@ -15,11 +17,34 @@ def verify(block):
 
 """ Returns the hash value of the block """
 def get_hash(block):
-	raise NotImplementedError()
+	return block.hash_block()
 
 """ Convert block to json """
 def block_to_json(block):
-	raise NotImplementedError()
+	assert isinstance(block, shard_block.ShardBlock, main_block.MainBlock)
+	if block.block_type == 'shard':
+		return json.dumps({shard_id: block.shard_id,
+						block_no: block.block_no,
+						parent_hash: block.parent_hash,
+						parent_block: block.parent_block,
+						transactions: block.transactions,
+						starting_state: block.starting_state,
+						resulting_state: block.resulting_state,
+						timestamp: block.timestamp,
+						difficulty: block.difficulty,
+						nonce: block.nonce,
+						jsontype: block.jsontype})
+
+	if self.block_type == 'main':
+		return json.dumps({block_no: block.block_no,
+						parent_hash: block.parent_hash,
+						parent_block: block.parent_block,
+						shards: block.shards,
+						shard_length: block.shard_length,
+						timestamp: block.timestamp,
+						difficulty: block.difficulty,
+						nonce: block.nonce,
+						jsontype: block.jsontype})
 
 """
 Returns appropriate shard for transaction
