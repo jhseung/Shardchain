@@ -60,10 +60,6 @@ class Node:
 			handle_transaction(transaction, True)
 		self.pending_transactions = []
 
-	def mine(self):
-		self.miner = consensus.Miner(self.current_mining_block)
-		nonce = self.miner.mine_block()
-
 	def run(self):
 		while True:
 
